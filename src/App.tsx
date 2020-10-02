@@ -1,24 +1,35 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import Amplify from "aws-amplify";
+import awsExports from "./aws-exports";
+import "./App.css";
+import { AmplifyAuthenticator } from "@aws-amplify/ui-react";
+import { AuthState, onAuthUIStateChange } from "@aws-amplify/ui-components";
+import AddItem from "./components/Add";
+import ListItems from "./components/List";
+
+Amplify.configure(awsExports);
 
 function App() {
-  return (
+  const [authState, setAuthState] = React.useState();
+  const [user, setUser] = React.useState();
+
+  React.useEffect(() => {
+    return onAuthUIStateChange((nextAuthState, authData) => {
+      setAuthState(nextAuthState);
+      setUser(authData);
+    });
+  }, []);
+
+  return authState === AuthState.SignedIn && user ? (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <AddItem />
+      <ListItems />
+    </div>
+  ) : (
+    <div className="container">
+      <div className="signIn">
+        <AmplifyAuthenticator />
+      </div>
     </div>
   );
 }
